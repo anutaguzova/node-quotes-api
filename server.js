@@ -8,14 +8,21 @@ const middleware = express.json()
 
 app.use(middleware)
 
+// get
 app.get('/', function(request, response) {
-  response.send('/quotes/17 should return one quote, by id')
+  response.send('/quotes/17 should return one quote, by id'); 
 });
 
-app.post('/quotes', function(request, response) {
-  const quote = request.body
+app.get('/quotes', function(request, response) {
+  response.json(quotes);
+});
 
-  if (notValidRequest(quote)) {
+
+// post
+app.post('/quotes', function(request, response) {
+  const quote = request.body;
+
+  if (quote.id == undefined || quote.author == undefined || quote.quote == undefined) {
     return response.status(400).send({success: false})
   }
 
@@ -23,36 +30,34 @@ app.post('/quotes', function(request, response) {
   response.status(201).send({success: true})
 })
 
-function notValidRequest(quote) {
-  return quote.id == undefined ||
-  quote.author == undefined || 
-  quote.body == undefined
-}
 
+
+//put
 app.put('/quotes/:id', function(request, response) {
-  const id = request.params.id  
-  const quoteUpdated = {
-    id: parseInt(id),
-    author: request.body.author,
-    quote: request.body.quote
-  }
-  const quotesFiltered = quotes.filter(function (quote) {
-      return quote.id != id
+  const id = request.params.id;  
+
+  quotes = quotes.map(function( quote) {
+    if (quote.id == id) {
+      return {
+        id: id,
+        ...request.body
+      }
+    } else {
+      return quote
+    }
   })
-  quotesFiltered.push(quoteUpdated)
-  quotes = quotesFiltered
 
   response.send({success: true})
 })
 
+//delete
 app.delete('/quotes/:id', function(request, response) {
-  const id = request.params.id
-  const quotesFiltered = quotes.filter(function (quote) {
-    return quote.id != id
-  })
+  const id = request.params.id;
+  const quotesFiltered = quotes.filter((quote) => quote.id != id)
   quotes = quotesFiltered
 
   response.send({success: true})
 })
+
 
 app.listen(3000, () => console.log("Listening on port 3000"));
